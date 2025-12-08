@@ -20,6 +20,9 @@
 			<div class="flex items-center space-x-6">
 				{#if $page.data.user}
 					<span class="mr-4">Welcome, {$page.data.user.username}</span>
+					{#if $page.data.user.role === 'admin'}
+						<a href="/admin" class="px-3 py-1 rounded-md text-sm font-medium bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">Admin</a>
+					{/if}
 					<form action="/logout" method="post" class="inline">
 						<button
 							type="submit"

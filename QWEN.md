@@ -60,64 +60,64 @@ DATABASE_URL="postgres://user:password@host:port/db-name"
 
 ### Install Dependencies:
 ```bash
-npm install
+bun install
 ```
 
 ### Development Server:
 ```bash
 # Start development server
-npm run dev
+bun run dev
 
 # Start with auto-open in browser
-npm run dev -- --open
+bun run dev -- --open
 ```
 
 ### Building for Production:
 ```bash
 # Create production build
-npm run build
+bun run build
 
 # Preview production build
-npm run preview
+bun run preview
 ```
 
 ### Database Management:
 ```bash
 # Push schema changes to database
-npm run db:push
+bun run db:push
 
 # Generate migration files
-npm run db:generate
+bun run db:generate
 
 # Run database migrations
-npm run db:migrate
+bun run db:migrate
 
 # Open Drizzle Studio for database management
-npm run db:studio
+bun run db:studio
 ```
 
 ### Code Quality:
 ```bash
 # Run type checking
-npm run check
+bun run check
 
 # Run continuous type checking
-npm run check:watch
+bun run check:watch
 
 # Lint code
-npm run lint
+bun run lint
 
 # Format code
-npm run format
+bun run format
 ```
 
 ### Testing:
 ```bash
 # Run unit tests
-npm run test
+bun run test
 
 # Run specific tests
-npm run test:unit
+bun run test:unit
 ```
 
 ## Development Conventions
@@ -161,7 +161,7 @@ The project uses SvelteKit's adapter system for deployment. The current configur
 
 ## Database Operations
 
-The project uses Drizzle ORM for database interactions, providing type-safe queries and migrations. Schema changes should be made in `src/lib/server/db/schema.ts` and then either pushed directly to the database using `npm run db:push` or generated as migration files using `npm run db:generate`.
+The project uses Drizzle ORM for database interactions, providing type-safe queries and migrations. Schema changes should be made in `src/lib/server/db/schema.ts` and then either pushed directly to the database using `bun run db:push` or generated as migration files using `bun run db:generate`.
 
 ## Authentication Flow
 
