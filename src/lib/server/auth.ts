@@ -2,6 +2,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 import { sha256 } from '@oslojs/crypto/sha2';
 import { encodeBase64url, encodeHexLowerCase } from '@oslojs/encoding';
+import bcrypt from 'bcryptjs';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 
@@ -78,4 +79,54 @@ export function deleteSessionTokenCookie(event: RequestEvent) {
 	event.cookies.delete(sessionCookieName, {
 		path: '/'
 	});
+}
+
+/**
+ * Hashes a password using bcrypt
+ * @param password The plain text password
+ * @returns A promise that resolves to the hashed password
+ */
+export async function hashPassword(password: string): Promise<string> {
+	const saltRounds = 10;
+	return bcrypt.hash(password, saltRounds);
+}
+
+/**
+ * Compares a plain text password with a hashed password
+ * @param password The plain text password
+ * @param hashedPassword The hashed password to compare against
+ * @returns A promise that resolves to true if the passwords match
+ */
+export async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
+	return bcrypt.compare(password, hashedPassword);
+}
+
+/**
+ * Creates a new user with the student role by default
+ * @param username The username for the new user
+ * @param password The plain text password for the new user
+ * @returns The created user object
+ */
+export async function createUser(username: string, password: string) {
+	const hashedPassword = await hashPassword(password);
+	const id = crypto.randomUUID(); // Generate a unique ID for the new user
+
+	const [newUser] = await db.insert(table.user).values({
+		id,
+		username,
+		password: hashedPassword,
+		role: 'student' // New users get the student role by default
+	}).returning();
+
+	return newUser;
+}
+
+/**
+ * Finds a user by username
+ * @param username The username to search for
+ * @returns The user object if found, null otherwise
+ */
+export async function getUserByUsername(username: string) {
+	const [user] = await db.select().from(table.user).where(eq(table.user.username, username));
+	return user || null;
 }
