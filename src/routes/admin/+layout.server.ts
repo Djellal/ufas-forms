@@ -1,14 +1,19 @@
-import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
+import { redirect } from '@sveltejs/kit';
+import { isAdmin } from '$lib/server/authorization';
 
-export const load: LayoutServerLoad = async (event) => {
-  // Check if user is authenticated and has admin role
-  if (!event.locals.user || event.locals.user.role !== 'admin') {
-    // Redirect to login if not authenticated or not an admin
-    throw redirect(302, '/login');
-  }
+export const load: LayoutServerLoad = async ({ locals }) => {
+	// Check if user is admin
+	if (!isAdmin(locals.user)) {
+		// Redirect to login if not authenticated
+		if (!locals.user) {
+			throw redirect(302, '/login');
+		}
+		// Otherwise, show access denied
+		throw redirect(302, '/'); // or another appropriate page
+	}
 
-  return {
-    user: event.locals.user
-  };
+	return {
+		user: locals.user
+	};
 };

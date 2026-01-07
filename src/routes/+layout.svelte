@@ -2,8 +2,14 @@
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
 
 	let { children } = $props();
+	let showAdminMenu = $state(false);
+
+	function toggleAdminMenu() {
+		showAdminMenu = !showAdminMenu;
+	}
 </script>
 
 <svelte:head>
@@ -21,7 +27,46 @@
 				{#if $page.data.user}
 					<span class="mr-4">Welcome, {$page.data.user.username}</span>
 					{#if $page.data.user.role === 'admin'}
-						<a href="/admin" class="px-3 py-1 rounded-md text-sm font-medium bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">Admin</a>
+						<div class="relative">
+							<button
+								on:click={toggleAdminMenu}
+								class="px-3 py-1 rounded-md text-sm font-medium bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 flex items-center"
+							>
+								Admin
+								<svg
+									class="ml-1 w-4 h-4"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+									xmlns="http://www.w3.org/2000/svg"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M19 9l-7 7-7-7"
+									></path>
+								</svg>
+							</button>
+
+							{#if showAdminMenu}
+								<div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+									<a
+										href="/admin/establishments"
+										class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+									>
+										Establishments
+									</a>
+									<a
+										href="/admin/domaines"
+										class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+									>
+										Domaines
+									</a>
+									<!-- Add more admin sub-menus here as needed -->
+								</div>
+							{/if}
+						</div>
 					{/if}
 					<form action="/logout" method="post" class="inline">
 						<button
