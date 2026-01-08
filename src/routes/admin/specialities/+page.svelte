@@ -3,15 +3,16 @@
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
 
-  let domaines = $state([]);
+  let specialities = $state([]);
   let loading = $state(true);
   let error = $state(null);
   let searchTerm = $state('');
-  let selectedLevel = $state('all'); // 'all', 'licence', 'master1', 'master2'
+  let selectedDomaine = $state('all');
+  let domaines = $state([]);
   let debounceTimer = null;
 
-  // Function to fetch domaines from the API with filters
-  async function fetchDomaines(search = '', level = 'all') {
+  // Function to fetch specialities from the API with filters
+  async function fetchSpecialities(search = '', domaineFilter = 'all') {
     try {
       // Clear previous timer to debounce requests
       if (debounceTimer) {
@@ -25,71 +26,87 @@
         // Construct query parameters
         const queryParams = new URLSearchParams();
         if (search) queryParams.append('search', search);
-        if (level && level !== 'all') queryParams.append('level', level);
+        if (domaineFilter && domaineFilter !== 'all') queryParams.append('domaine', domaineFilter);
 
         const queryString = queryParams.toString();
-        const apiUrl = queryString ? `/api/admin/domaines?${queryString}` : '/api/admin/domaines';
+        const apiUrl = queryString ? `/api/admin/specialities?${queryString}` : '/api/admin/specialities';
 
         const response = await fetch(apiUrl);
         if (response.ok) {
-          domaines = await response.json();
+          specialities = await response.json();
         } else {
           const result = await response.json();
-          error = result.error || 'Failed to load domaines';
+          error = result.error || 'Failed to load specialities';
         }
 
         loading = false;
       }, 300); // 300ms delay
     } catch (err) {
-      error = 'Error loading domaines: ' + err.message;
+      error = 'Error loading specialities: ' + err.message;
       loading = false;
     }
   }
 
+  // Function to fetch domaines for the filter dropdown
+  async function fetchDomaines() {
+    try {
+      const response = await fetch('/api/admin/domaines');
+      if (response.ok) {
+        domaines = await response.json();
+      } else {
+        console.error('Failed to load domaines for specialities filter');
+      }
+    } catch (err) {
+      console.error('Error loading domaines for specialities filter:', err);
+    }
+  }
+
   onMount(async () => {
+    await fetchSpecialities();
     await fetchDomaines();
   });
 
   // Handle search term changes
   function handleSearchTermChange(event) {
     searchTerm = event.target.value;
-    fetchDomaines(searchTerm, selectedLevel);
+    fetchSpecialities(searchTerm, selectedDomaine);
   }
 
-  // Handle level filter changes
-  function handleLevelChange(event) {
-    selectedLevel = event.target.value;
-    fetchDomaines(searchTerm, selectedLevel);
+  // Handle domaine filter changes
+  function handleDomaineChange(event) {
+    selectedDomaine = event.target.value;
+    fetchSpecialities(searchTerm, selectedDomaine);
   }
 
-  async function deleteDomaine(id) {
-    if (confirm('Are you sure you want to delete this domaine?')) {
-      const response = await fetch(`/api/admin/domaines/${id}`, {
+  async function deleteSpeciality(id) {
+    if (confirm('Are you sure you want to delete this speciality?')) {
+      const response = await fetch(`/api/admin/specialities/${id}`, {
         method: 'DELETE'
       });
 
       if (response.ok) {
         // Refresh the list after deletion
-        await fetchDomaines(searchTerm, selectedLevel);
+        await fetchSpecialities(searchTerm, selectedDomaine);
       } else {
-        alert('Failed to delete domaine');
+        const result = await response.json();
+        alert(result.error || 'Failed to delete speciality');
       }
     }
   }
 </script>
 
 <svelte:head>
-  <title>Domaines - Admin Panel</title>
+  <title>Specialities - Admin Panel</title>
 </svelte:head>
 
 <div class="container mx-auto px-4 py-8">
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-    <h1 class="text-3xl font-bold text-gray-800">Domaines</h1>
+    <h1 class="text-3xl font-bold text-gray-800">Specialities</h1>
     <a
-      href="/admin/domaines/create"
+      href="/admin/specialities/create"
       class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
     >
-      Add New Domaine
+      Add New Speciality
     </a>
   </div>
 
@@ -103,22 +120,22 @@
           type="text"
           value={searchTerm}
           oninput={handleSearchTermChange}
-          placeholder="Search by name or level..."
+          placeholder="Search by name..."
           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
       <div>
-        <label for="levelFilter" class="block text-sm font-medium text-gray-700 mb-1">Filter by Level</label>
+        <label for="domaineFilter" class="block text-sm font-medium text-gray-700 mb-1">Filter by Domaine</label>
         <select
-          id="levelFilter"
-          value={selectedLevel}
-          onchange={handleLevelChange}
+          id="domaineFilter"
+          value={selectedDomaine}
+          onchange={handleDomaineChange}
           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <option value="all">All Levels</option>
-          <option value="licence">Licence</option>
-          <option value="master1">Master 1</option>
-          <option value="master2">Master 2</option>
+          <option value="all">All Domaines</option>
+          {#each domaines as dom}
+            <option value={dom.id}>{dom.name}</option>
+          {/each}
         </select>
       </div>
     </div>
@@ -133,54 +150,54 @@
   {#if loading}
     <div class="text-center py-8">
       <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      <p class="mt-4 text-gray-600">Loading domaines...</p>
+      <p class="mt-4 text-gray-600">Loading specialities...</p>
     </div>
   {:else}
-    {#if domaines.length === 0}
+    {#if specialities.length === 0}
       <div class="bg-white rounded-lg shadow-md p-8 text-center">
         <p class="text-gray-600 mb-4">
-          {#if searchTerm || selectedLevel !== 'all'}
-            No domaines match your filters.
+          {#if searchTerm || selectedDomaine !== 'all'}
+            No specialities match your filters.
           {:else}
-            No domaines found.
+            No specialities found.
           {/if}
         </p>
         <a
-          href="/admin/domaines/create"
+          href="/admin/specialities/create"
           class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
         >
-          Create your first domaine
+          Create your first speciality
         </a>
       </div>
     {:else}
       <div class="bg-white rounded-lg shadow-md overflow-hidden">
         <div class="text-sm text-gray-700 px-6 py-3 bg-gray-50">
-          Showing {domaines.length} of {domaines.length} domaines
+          Showing {specialities.length} of {specialities.length} specialities
         </div>
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Level</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Domaine</th>
               <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            {#each domaines as dom (dom.id)}
+            {#each specialities as spec (spec.speciality.id)}
               <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{dom.id}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{dom.name}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{dom.level}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{spec.speciality.id}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{spec.speciality.name}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{spec.domaine.name}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <a
-                    href={`/admin/domaines/edit/${dom.id}`}
+                    href={`/admin/specialities/edit/${spec.speciality.id}`}
                     class="text-blue-600 hover:text-blue-900 mr-4"
                   >
                     Edit
                   </a>
                   <button
-                    onclick={() => deleteDomaine(dom.id)}
+                    onclick={() => deleteSpeciality(spec.speciality.id)}
                     class="text-red-600 hover:text-red-900"
                   >
                     Delete

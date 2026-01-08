@@ -28,6 +28,14 @@ export const domaine = pgTable('domaine', {
 	level: text('level').notNull() // licence, master1, master2
 });
 
+export const speciality = pgTable('speciality', {
+	id: serial('id').primaryKey(),
+	name: text('name').notNull(),
+	domaineId: integer('domaine_id')
+		.notNull()
+		.references(() => domaine.id)
+});
+
 export type Session = typeof session.$inferSelect;
 
 export type User = typeof user.$inferSelect;
@@ -35,6 +43,8 @@ export type User = typeof user.$inferSelect;
 export type Establishment = typeof establishment.$inferSelect;
 
 export type Domaine = typeof domaine.$inferSelect;
+
+export type Speciality = typeof speciality.$inferSelect;
 
 // Define role types for TypeScript
 export type UserRole = 'admin' | 'facadmin' | 'student';

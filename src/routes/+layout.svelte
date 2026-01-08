@@ -29,7 +29,7 @@
 					{#if $page.data.user.role === 'admin'}
 						<div class="relative">
 							<button
-								on:click={toggleAdminMenu}
+								onclick={toggleAdminMenu}
 								class="px-3 py-1 rounded-md text-sm font-medium bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 flex items-center"
 							>
 								Admin
@@ -62,6 +62,12 @@
 										class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
 									>
 										Domaines
+									</a>
+									<a
+										href="/admin/specialities"
+										class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+									>
+										Specialities
 									</a>
 									<!-- Add more admin sub-menus here as needed -->
 								</div>
