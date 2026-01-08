@@ -18,6 +18,9 @@
           <a href="/forms" class="text-indigo-600 hover:text-indigo-800">View available forms</a>
         </li>
         <li>
+          <a href="/demande-inscription" class="text-indigo-600 hover:text-indigo-800">Submit inscription request</a>
+        </li>
+        <li>
           <a href="/dashboard" class="text-indigo-600 hover:text-indigo-800">Access your dashboard</a>
         </li>
       </ul>
